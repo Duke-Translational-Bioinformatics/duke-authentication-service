@@ -1,0 +1,8 @@
+server:
+  build: .
+  environment:
+    - RAILS_ENV=development
+  volumes:
+    - .:/var/www/app
+  ports:
+    - 3000:3000
