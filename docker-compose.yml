@@ -4,5 +4,13 @@ server:
     - RAILS_ENV=development
   volumes:
     - .:/var/www/app
+shibconfig:
+  image: shibconfig
+rproxy:
+  build: ./docker/builds/reverse_proxy
   ports:
-    - 3000:3000
+    - "3000:443"
+  links:
+    - "server:protected.app"
+  volumes_from:
+    - shibconfig

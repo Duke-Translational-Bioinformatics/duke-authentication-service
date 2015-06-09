@@ -1,0 +1,6 @@
+[duke-el-shib2]
+name=Shibboleth2
+baseurl=http://install.oit.duke.edu/shibboleth2/el-6/$basearch/
+enabled=1
+gpgcheck=0
+priority=1
