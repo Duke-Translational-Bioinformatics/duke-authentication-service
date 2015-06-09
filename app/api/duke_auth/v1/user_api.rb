@@ -7,7 +7,7 @@ module DukeAuth
         failure [404]
       end
       get '/profile/:id', root: false do
-        {todo: 'implement'}
+        
       end
     end
   end

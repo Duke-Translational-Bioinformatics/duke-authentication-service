@@ -8,7 +8,7 @@ module DukeAuth
       end
       get '/app/status', root: false do
         begin
-          {'status': 'ok'}
+          
         rescue
           error!('problem encountered',503)
         end
