@@ -16,7 +16,8 @@ gem 'tilt'
 gem 'jquery-rails'
 gem 'turbolinks'
 gem 'uglifier'
-
+gem 'omniauth'
+gem 'omniauth-shibboleth'
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
