@@ -17,17 +17,17 @@ rproxy:
   volumes_from:
     - shibconfig
 rails:
-  image: dukedataservice_server
+  image: dukeauthenticationservice_server
   volumes_from:
     - server
   entrypoint: rails
 rake:
-  image: dukedataservice_server
+  image: dukeauthenticationservice_server
   volumes_from:
     - server
   entrypoint: rake
 rspec:
-  image: dukedataservice_server
+  image: dukeauthenticationservice_server
   environment:
     - RAILS_ENV=test
   volumes_from:
