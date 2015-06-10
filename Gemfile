@@ -18,6 +18,10 @@ gem 'turbolinks'
 gem 'uglifier'
 gem 'omniauth'
 gem 'omniauth-shibboleth'
+
+# use redis to cache the user temporarily
+gem 'redis'
+
 # Use Capistrano for deployment
 # gem 'capistrano-rails', group: :development
 
