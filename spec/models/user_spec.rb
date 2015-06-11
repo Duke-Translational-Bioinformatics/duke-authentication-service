@@ -54,7 +54,7 @@ RSpec.describe User do
       expect(stored_user_info_json).to be
       stored_user_info = JSON.parse(stored_user_info_json)
       expect(stored_user_info).to have_key(:credentials)
-      expect(stored_user_info[:credentials].to eq(stored_user.to_json)
+      expect(stored_user_info[:credentials]).to eq(user.to_json)
       expected_ttl = $redist.ttl(auth_code)
       expect(expected_ttl).not_to eq(-1)
       expect(expected_ttl).to be > min_secs
@@ -81,13 +81,56 @@ RSpec.describe User do
       expect(expected_ttl).to be > min_secs
       expect(expected_ttl).to be < full_expire
       cached_info = JSON.parse(cached_info_json)
+      expect(cached_info).to have_key(:token)
+      expect(cached_info[:token]).to eq(token)
+      expect(cached_info).to have_key(:credentials)
+      expect(cached_info[:credentials]).to eq(user.to_json)
     end
 
-    it 'should return nil if the user is not cached' do
+    it 'should return nil if the auth_code does not exist' do
       $redis.del(auth_code)
       expect($redis.exists(auth_code)).not_to be
-      requested_user = User.find(auth_code)
-      expect(User.find(auth_code)).to be_nil
+      expect(User.token(auth_code)).to be_nil
+    end
+  end
+
+  describe 'User.credentials(auth_code, token)' do
+    let(:auth_code) {$auth_code = user.auth_code}
+    let(:token) {$token = User.token(auth_code)}
+
+    it 'should require an auth_code and token' do
+      expect(User).to respond_to 'credentials'
+      expect{
+        User.credentials()
+      }.to raise_error(ArgumentError)
+      expect{
+        User.credentials(auth_code)
+      }.to raise_error(ArgumentError)
+    end
+
+    it 'should return the credentials stored for the user if the auth_code exists and the token matches' do
+      expect($redis.exists(auth_code)).to be
+      credentials = User.credentials(auth_code, token)
+      cached_info_json = $redis.get(auth_code)
+      expected_ttl = $redis.ttl(auth_code)
+      expect(expected_ttl).not_to eq(-1)
+      expect(expected_ttl).to be > min_secs
+      expect(expected_ttl).to be < full_expire
+      cached_info = JSON.parse(cached_info_json)
+      expect(credentials).to eq(user.to_json)
+    end
+
+    it 'should return nil if the auth_code does not exist' do
+      $redis.del(auth_code)
+      expect($redis.exists(auth_code)).not_to be
+      expect(User.credentials(auth_code, token)).to be_nil
+    end
+
+    it 'should raise a DukeAuthenticationService::TokenException if the token does not match' do
+      expect($redis.exists(auth_code)).to be
+      expect {
+        credentials = User.credentials(auth_code,'notatoken')
+      }.to raise_exception(DukeAuthenticationService::TokenException)
     end
   end
 end
