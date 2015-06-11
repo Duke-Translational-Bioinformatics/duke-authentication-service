@@ -1,7 +1,7 @@
 class CreateConsumers < ActiveRecord::Migration
   def change
     create_table :consumers do |t|
-      t.string :id
+      t.string :uuid
       t.string :secret
 
       t.timestamps null: false
