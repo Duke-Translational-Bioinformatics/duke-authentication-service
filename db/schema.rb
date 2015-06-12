@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150612151642) do
+ActiveRecord::Schema.define(version: 20150610145809) do
 
   create_table "consumers", force: :cascade do |t|
     t.string   "uuid"
