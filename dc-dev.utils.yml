@@ -4,8 +4,14 @@ server:
   build: .
   environment:
     - RAILS_ENV=development
+    - REDIS_HOST=redis.local
+    - REDIS_PORT=6379
   volumes:
     - .:/var/www/app
+  links:
+    - 'redis:redis.local'
+redis:
+  image: redis
 shibconfig:
   image: shibconfig
 rproxy:
@@ -18,19 +24,33 @@ rproxy:
     - shibconfig
 rails:
   image: dukeauthenticationservice_server
+  environment:
+    - REDIS_HOST=redis.local
+    - REDIS_PORT=6379
   volumes_from:
     - server
+  links:
+    - redis:redis.local
   entrypoint: rails
 rake:
   image: dukeauthenticationservice_server
   volumes_from:
     - server
+  links:
+    - redis:redis.local
+  environment:
+    - REDIS_HOST=redis.local
+    - REDIS_PORT=6379
   entrypoint: rake
 rspec:
   image: dukeauthenticationservice_server
   environment:
     - RAILS_ENV=test
+    - REDIS_HOST=redis.local
+    - REDIS_PORT=6379
   volumes_from:
     - server
+  links:
+    - redis:redis.local
   entrypoint: rspec
   command: spec

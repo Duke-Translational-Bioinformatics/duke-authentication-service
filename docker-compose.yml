@@ -2,8 +2,12 @@ server:
   build: .
   environment:
     - RAILS_ENV=development
+    - REDIS_HOST=redis.local
+    - REDIS_PORT=6379
   volumes:
     - .:/var/www/app
+  links:
+    - 'redis:redis.local'
 shibconfig:
   image: shibconfig
 rproxy:
@@ -14,3 +18,5 @@ rproxy:
     - "server:protected.app"
   volumes_from:
     - shibconfig
+redis:
+  image: redis

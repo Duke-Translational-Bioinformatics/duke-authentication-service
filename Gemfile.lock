@@ -150,6 +150,7 @@ GEM
       rails (>= 3.1)
       react-source (~> 0.13)
     react-source (0.13.3)
+    redis (3.2.1)
     rspec-core (3.2.3)
       rspec-support (~> 3.2.0)
     rspec-expectations (3.2.1)
@@ -211,6 +212,7 @@ DEPENDENCIES
   puma
   rails (= 4.2.1)
   react-rails
+  redis
   rspec-rails
   shoulda-matchers
   spring
