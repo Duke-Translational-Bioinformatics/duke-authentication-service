@@ -1,4 +1,5 @@
 require 'rails_helper'
+require 'shoulda-matchers'
 
 RSpec.describe User, type: :model do
   let(:display_name) {$display_name = Faker::Name.name}
@@ -21,38 +22,38 @@ RSpec.describe User, type: :model do
 
 
   describe 'user.token' do
-    it 'should require a display_name, email, and scope' do
+    it 'should require a display_name, mail, and scope' do
+      expect(subject).to respond_to 'token'
       expect{
-        subject.new()
+        subject.token()
       }.to raise_error(ArgumentError)
       expect{
-        subject.new(mail: mail)
+        subject.token(mail: mail)
       }.to raise_error(ArgumentError)
       expect{
-        subject.new(display_name: display_name)
+        subject.token(display_name: display_name)
       }.to raise_error(ArgumentError)
       expect{
-        subject.new(scope: scope)
+        subject.token(scope: scope)
       }.to raise_error(ArgumentError)
     end
 
     it 'should create a token, set the value to user credentials with an expire of 4 hours, and return token' do
-      expect(subject).to respond_to 'token'
       token = subject.token(mail: mail, display_name: display_name, scope: scope)
       expect(token).to be
       stored_user_info_json = $redis.get(token)
       expect(stored_user_info_json).to be
       stored_user_info = JSON.parse(stored_user_info_json)
-      expected_ttl = $redist.ttl(token)
+      expected_ttl = $redis.ttl(token)
       expect(expected_ttl).not_to eq(-1)
       expect(expected_ttl).to be > min_secs
-      expect(expected_ttl).to be < full_expire
-      expect(stored_user_info).to eq({uid: subject.uid, mail: mail, display_name: display_name, scope: scope, expires_in: expected_ttl}.to_json)
+      expect(expected_ttl).to be <= full_expire
+      expect(stored_user_info.symbolize_keys!).to eq({uid: subject.uid, mail: mail, display_name: display_name, scope: scope})
     end
   end
 
   describe 'User.credentials(token)' do
-    let(:token) {$token = User.token(mail: mail, display_name: display_name)}
+    let(:token) {$token = subject.token(mail: mail, display_name: display_name, scope: scope)}
 
     it 'should require a token' do
       expect(User).to respond_to 'credentials'
@@ -68,9 +69,9 @@ RSpec.describe User, type: :model do
       expected_ttl = $redis.ttl(token)
       expect(expected_ttl).not_to eq(-1)
       expect(expected_ttl).to be > min_secs
-      expect(expected_ttl).to be < full_expire
+      expect(expected_ttl).to be <= full_expire
       credentials = JSON.parse(cached_info_json)
-      expect(credentials).to eq({uid: subject.uid, mail: mail, display_name: display_name, scope: scope, expires_in: expected_ttl}.to_json)
+      expect(credentials.symbolize_keys!).to eq({uid: subject.uid, mail: mail, display_name: display_name, scope: scope})
     end
 
     it 'should return nil if the token does not exist' do
