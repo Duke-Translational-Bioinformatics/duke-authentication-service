@@ -1,7 +1,10 @@
+require 'faker'
+require 'securerandom'
+
 FactoryGirl.define do
   factory :consumer do
-    id "MyString"
-secret "MyString"
+    uuid   { SecureRandom.uuid }
+    secret { Faker::Lorem.characters }
   end
 
 end
