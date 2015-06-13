@@ -2,7 +2,7 @@ require 'rails_helper'
 require 'shoulda/matchers'
 
 describe Consumer, type: :model do
-  subject() { FactoryGirl.create(:consume) }
+  subject() { FactoryGirl.create(:consumer) }
   it "should have a uuid" do
     should validate_presence_of(:uuid)
     should validate_uniqueness_of(:uuid)
@@ -16,7 +16,7 @@ describe Consumer, type: :model do
     let(:display_name) { $display_name = Faker::Name.name }
     let(:mail) { $mail = Faker::Internet.email }
     let(:scope) { $scope = 'email,uid,display_name' }
-    let (:token) { $token = user.token(mail: mail, display_name: display_name, mail: mail, scope: scope) }
+    let (:token) { $token = user.token(display_name: display_name, mail: mail, scope: scope) }
     let (:access_token) { $access_token = {access_token: token } }
 
     it 'should require a hash' do
