@@ -20,15 +20,15 @@ describe Consumer, type: :model do
     let (:access_token) { $access_token = {access_token: token } }
 
     it 'should require a hash' do
-      expect(consumer).to respond_to 'signed_token'
+      expect(subject).to respond_to 'signed_token'
       expect {
-        consumer.signed_token()
+        subject.signed_token()
       }.to raise_error(ArgumentError)
     end
 
     it 'should take a token and returned a jason web token signed with the consumer secret' do
-      jwt = consumer.signed_token(access_token)
-      decoded_access_token =   JWT.decode(jwt, consumer.secret)[0]
+      jwt = subject.signed_token(access_token)
+      decoded_access_token =   JWT.decode(jwt, subject.secret)[0]
       expect(decoded_access_token).to have_key('access_token')
       expect(decoded_access_token['access_token']).to eq(token)
     end
