@@ -7,8 +7,12 @@ describe Consumer, type: :model do
     should validate_presence_of(:uuid)
     should validate_uniqueness_of(:uuid)
   end
-  it "shoud have a secret" do
+  it "should have a secret" do
     should validate_presence_of(:secret)
+  end
+
+  it 'should have a redirect_uri' do
+    should validate_presence_of(:redirect_uri)
   end
 
   describe 'consumer.signed_token' do
