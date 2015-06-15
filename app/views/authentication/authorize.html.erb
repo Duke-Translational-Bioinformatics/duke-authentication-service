@@ -1,0 +1,9 @@
+<h1>An application would like to connect to your account<h1>
+
+<h3>Duke Data Services would like to access your profile.</h3>
+
+<h4>Allow Access?</h4>
+<%= form_tag(process_authorization_path) do %>
+  <%= submit_tag('deny') %>
+  <%= submit_tag('allow') %>
+<% end %>
