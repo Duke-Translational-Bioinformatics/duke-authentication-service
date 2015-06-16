@@ -50,6 +50,7 @@ class AuthenticationController < ApplicationController
     consumer = Consumer.where(uuid: session[:client_id]).first
     if @user
       @token = @user.token(
+        client_id: consumer.uuid,
         display_name: session[:display_name],
         mail: session[:mail],
         scope: session[:scope] || Rails.application.config.default_scope

@@ -16,25 +16,36 @@ describe Consumer, type: :model do
   end
 
   describe 'consumer.signed_token' do
-    let (:user) { $user = FactoryGirl.create(:user) }
-    let(:display_name) { $display_name = Faker::Name.name }
-    let(:mail) { $mail = Faker::Internet.email }
-    let(:scope) { $scope = 'email,uid,display_name' }
-    let (:token) { $token = user.token(display_name: display_name, mail: mail, scope: scope) }
-    let (:access_token) { $access_token = {access_token: token } }
+    let (:user) { FactoryGirl.create(:user) }
+    let(:display_name) { Faker::Name.name }
+    let(:mail) { Faker::Internet.email }
+    let(:scope) { Rails.application.config.default_scope }
+    let (:token) { user.token(
+        client_id: subject.uuid,
+        display_name: display_name,
+        mail: mail,
+        scope: scope
+      )
+    }
+    let (:access_token) { { access_token: token } }
 
     it 'should require a hash' do
       expect(subject).to respond_to 'signed_token'
       expect {
         subject.signed_token()
       }.to raise_error(ArgumentError)
+      expect {
+        subject.signed_token(access_token)
+      }.not_to raise_error
     end
 
-    it 'should take a token and returned a jason web token signed with the consumer secret' do
+    it 'should take a hash, add its uuid as the client_id, and returned a jason web token signed with the consumer secret' do
       jwt = subject.signed_token(access_token)
       decoded_access_token =   JWT.decode(jwt, subject.secret)[0]
       expect(decoded_access_token).to have_key('access_token')
       expect(decoded_access_token['access_token']).to eq(token)
+      expect(decoded_access_token).to have_key('client_id')
+      expect(decoded_access_token['client_id']).to eq(subject.uuid)
     end
   end
 end

@@ -4,6 +4,7 @@ class Consumer < ActiveRecord::Base
   validates :redirect_uri, presence: true
 
   def signed_token(token)
+    token['client_id'] = uuid
     JWT.encode(token, secret)
   end
 end
