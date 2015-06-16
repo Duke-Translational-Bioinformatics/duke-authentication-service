@@ -10,7 +10,18 @@ module DukeAuth
         optional :access_token, type: String
       end
       get '/token_info', root: false do
-        error!({error: 'invalid_token'},400)
+        token_info_params = declared(params, include_missing: false)
+        if credentials = User.credentials(token_info_params[:access_token])
+          info = JSON.parse(credentials[:info])
+          {
+            audience: info['client_id'],
+            uid: info['uid'],
+            scope: info['scope'],
+            expires_in: credentials[:expires_in]
+          }
+        else
+          error!({error: 'invalid_token'},400)
+        end
       end
     end
   end
