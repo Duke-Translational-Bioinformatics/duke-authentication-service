@@ -19,6 +19,12 @@ class User < ActiveRecord::Base
   end
 
   def self.credentials(token)
-    $redis.get token
+    info = $redis.get(token)
+    if info
+      {
+        info: info,
+        expires_in: $redis.ttl(token)
+      }
+    end
   end
 end

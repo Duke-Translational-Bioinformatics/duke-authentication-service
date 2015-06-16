@@ -50,7 +50,7 @@ RSpec.describe User, type: :model do
       }.not_to raise_error
     end
 
-    it 'should create a token, set the value to user credentials with an expire of 4 hours, and return token' do
+    it 'should create a hex string token, set the value to JSON serialized hash of the user credentials with an expire of 4 hours, and return the generated token' do
       token = subject.token(
             client_id: consumer.uuid,
             mail: mail,
@@ -88,16 +88,14 @@ RSpec.describe User, type: :model do
       }.not_to raise_error
     end
 
-    it 'should return the credentials stored for the user if the token exists' do
+    it 'should return a hash with key info equal to the credentials stored for the user, and expires_in equal to the expiration, if the token exists' do
       expect($redis.exists(token)).to be
       credentials = User.credentials(token)
-      cached_info_json = $redis.get(token)
       expected_ttl = $redis.ttl(token)
-      expect(expected_ttl).not_to eq(-1)
-      expect(expected_ttl).to be > min_secs
-      expect(expected_ttl).to be <= full_expire
-      credentials = JSON.parse(cached_info_json)
-      expect(credentials.symbolize_keys!).to eq(expected_credentials)
+      expect(credentials).to have_key(:info)
+      expect(JSON.parse(credentials[:info]).symbolize_keys!).to eq(expected_credentials)
+      expect(credentials).to have_key(:expires_in)
+      expect(credentials[:expires_in]).to eq(expected_ttl)
     end
 
     it 'should return nil if the token does not exist' do
