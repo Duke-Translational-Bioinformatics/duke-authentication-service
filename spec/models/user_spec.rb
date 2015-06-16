@@ -18,12 +18,6 @@ RSpec.describe User, type: :model do
     }
   }
 
-  after(:all) do
-    $redis.keys.each do |key|
-      $redis.del key
-    end
-  end
-
   it 'should require a unique uid' do
     should validate_presence_of(:uid)
     should validate_uniqueness_of(:uid)

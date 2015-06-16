@@ -40,6 +40,13 @@ RSpec.configure do |config|
     mocks.verify_partial_doubles = true
   end
 
+  #clean up redis
+  config.after(:suite) do
+    $redis.keys.each do |key|
+      $redis.del key
+    end
+  end
+
 # The settings below are suggested to provide a good initial experience
 # with RSpec, but feel free to customize to your heart's content.
 =begin
