@@ -18,12 +18,12 @@ describe Consumer, type: :model do
   describe 'consumer.signed_token' do
     let (:user) { FactoryGirl.create(:user) }
     let(:display_name) { Faker::Name.name }
-    let(:mail) { Faker::Internet.email }
+    let(:email) { Faker::Internet.email }
     let(:scope) { Rails.application.config.default_scope }
     let (:token) { user.token(
         client_id: subject.uuid,
         display_name: display_name,
-        mail: mail,
+        email: email,
         scope: scope
       )
     }

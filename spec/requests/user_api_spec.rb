@@ -6,13 +6,13 @@ describe DukeAuth::V1::UserAPI do
   let(:consumer) {FactoryGirl.create(:consumer)}
   let (:user) { FactoryGirl.create(:user) }
   let(:display_name) { Faker::Name.name }
-  let(:mail) { Faker::Internet.email }
-  let(:scope) { 'display_name mail uid' }
+  let(:email) { Faker::Internet.email }
+  let(:scope) { 'display_name email uid' }
   let (:token) { 
     user.token(
       client_id: consumer.uuid,
       display_name: display_name, 
-      mail: mail, 
+      email: email, 
       scope: scope
     ) 
   }

@@ -6,7 +6,7 @@ RSpec.describe AuthenticationController, type: :controller do
   let(:first_time_user) { FactoryGirl.build(:user) }
   let(:consumer) { FactoryGirl.create(:consumer) }
   let(:display_name) { Faker::Name.name }
-  let(:mail) { Faker::Internet.email }
+  let(:email) { Faker::Internet.email }
   let(:response_type) { 'token' }
   let(:state) { Faker::Lorem.characters(20) }
 
@@ -18,15 +18,15 @@ RSpec.describe AuthenticationController, type: :controller do
   def handle_shibboleth_expectation(expected_user)
     expect(session[:uid]).to eq(expected_user.uid)
     expect(session[:display_name]).to eq(display_name)
-    expect(session[:mail]).to eq(mail)
+    expect(session[:email]).to eq(email)
   end
 
-  def login_shib_user(user, display_name, mail)
+  def login_shib_user(user, display_name, email)
     @request.env['omniauth.auth'] = {
       uid: user.uid,
       info: {
         name: display_name,
-        mail: mail
+        mail: email
       }
     }
   end
@@ -34,7 +34,7 @@ RSpec.describe AuthenticationController, type: :controller do
   def generate_shib_session(user)
     session[:uid] = user.uid
     session[:display_name] = display_name
-    session[:mail] = mail
+    session[:email] = email
   end
 
   def authorized_consumer_expectation
@@ -102,7 +102,7 @@ RSpec.describe AuthenticationController, type: :controller do
    describe 'when user has not already authorized the consumer' do
      it 'should set user session and redirect_to authorize' do
        generate_authenticate_session
-       login_shib_user(first_time_user, display_name, mail)
+       login_shib_user(first_time_user, display_name, email)
        get :handle_shibboleth
        handle_shibboleth_expectation(first_time_user)
        expect(response).to redirect_to(authorize_url)
@@ -112,7 +112,7 @@ RSpec.describe AuthenticationController, type: :controller do
    describe 'when user has already authorized the consumer' do
      it 'should create access_token and redirect_to consumer.redirect_uri with expected fragment url parameters' do
        generate_authenticate_session
-       login_shib_user(user, display_name, mail)
+       login_shib_user(user, display_name, email)
        get :handle_shibboleth
        handle_shibboleth_expectation(user)
        authorized_consumer_expectation

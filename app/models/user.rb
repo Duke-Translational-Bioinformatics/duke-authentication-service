@@ -4,7 +4,7 @@ class User < ActiveRecord::Base
 
   def token(**credentials)
     credentials.symbolize_keys!
-    [:client_id, :mail, :display_name, :scope].each do |rkey|
+    [:client_id, :email, :display_name, :scope].each do |rkey|
       unless credentials.has_key? rkey
         raise ArgumentError, "#{rkey} required"
       end

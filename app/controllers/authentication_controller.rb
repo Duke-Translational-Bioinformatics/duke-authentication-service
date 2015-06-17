@@ -24,7 +24,7 @@ class AuthenticationController < ApplicationController
   def handle_shibboleth
     session[:uid] = request.env['omniauth.auth'][:uid]
     session[:display_name] = request.env['omniauth.auth'][:info][:name]
-    session[:mail] = request.env['omniauth.auth'][:info][:mail]
+    session[:email] = request.env['omniauth.auth'][:info][:mail]
     @user = User.where(uid: session[:uid]).first
     if @user
       redirect_to_consumer
@@ -52,7 +52,7 @@ class AuthenticationController < ApplicationController
       @token = @user.token(
         client_id: consumer.uuid,
         display_name: session[:display_name],
-        mail: session[:mail],
+        email: session[:email],
         scope: session[:scope] || Rails.application.config.default_scope
       )
       access_token = consumer.signed_token({
