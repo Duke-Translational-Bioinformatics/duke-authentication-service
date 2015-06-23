@@ -40,12 +40,9 @@ RSpec.describe AuthenticationController, type: :controller do
   def authorized_consumer_expectation
     expect(assigns(:token)).to be
     token = assigns(:token)
-    access_token = consumer.signed_token({
-      access_token: token
-    })
     token_ttl = $redis.ttl(token)
     params = {
-      access_token: access_token,
+      access_token: token,
       token_type: 'Bearer',
       state: session[:state],
       expires_in: token_ttl,
