@@ -14,7 +14,7 @@ class AuthenticationController < ApplicationController
         session[:scope] = params[:scope]
       end
       session[:respose_type] = 'token'
-      redirect_to shibboleth_login_url
+      redirect_to shibboleth_login_url(:protocol => 'https://')
     else
       render plain: 'invalid_request', status: 401, layout: false
       return
@@ -29,7 +29,7 @@ class AuthenticationController < ApplicationController
     if @user
       redirect_to_consumer
     else
-      redirect_to authorize_url
+      redirect_to authorize_url(:protocol => 'https://')
     end
   end
 
@@ -38,7 +38,7 @@ class AuthenticationController < ApplicationController
   end
 
   def process_authorization
-    if params[:submitted] == 'allow'
+    if params[:commit] == 'allow'
       @user = User.create(uid: session[:uid])
     end
     redirect_to_consumer
