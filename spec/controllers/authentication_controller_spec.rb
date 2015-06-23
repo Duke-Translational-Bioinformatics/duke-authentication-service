@@ -94,7 +94,7 @@ RSpec.describe AuthenticationController, type: :controller do
       expect(session[:client_id]).to eq(consumer.uuid)
       expect(session[:state]).to eq(state)
       # scope and response_type are there, but currently unused
-      expect(response).to redirect_to(shibboleth_login_url)
+      expect(response).to redirect_to(shibboleth_login_url(:protocol => 'https://'))
     end
   end
 
@@ -105,7 +105,7 @@ RSpec.describe AuthenticationController, type: :controller do
        login_shib_user(first_time_user, display_name, email)
        get :handle_shibboleth
        handle_shibboleth_expectation(first_time_user)
-       expect(response).to redirect_to(authorize_url)
+       expect(response).to redirect_to(authorize_url(:protocol => 'https://'))
      end
    end
 
@@ -137,7 +137,7 @@ RSpec.describe AuthenticationController, type: :controller do
        generate_authenticate_session
        generate_shib_session(first_time_user)
        expect {
-         post :process_authorization, submitted: 'declined'
+         post :process_authorization, commit: 'deny'
        }.to_not change{User.count}
        expect(User.where(uid: first_time_user.uid)).not_to exist
        params = {
@@ -153,7 +153,7 @@ RSpec.describe AuthenticationController, type: :controller do
        generate_authenticate_session
        generate_shib_session(first_time_user)
        expect {
-         post :process_authorization, submitted: 'allow'
+         post :process_authorization, commit: 'allow'
        }.to change{User.count}.by(1)
        expect(User.where(uid: first_time_user.uid)).to exist
        authorized_consumer_expectation
