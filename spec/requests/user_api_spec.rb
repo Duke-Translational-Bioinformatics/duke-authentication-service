@@ -8,6 +8,14 @@ describe DukeAuth::V1::UserAPI do
   let(:display_name) { Faker::Name.name }
   let(:email) { Faker::Internet.email }
   let(:scope) { 'display_name email uid' }
+  let(:signed_info) { 
+    consumer.signed_token({
+      uid: user.uid,
+      display_name: display_name,
+      email: email,
+      service_id: Rails.application.secrets.service_id
+    })
+  }
   let (:token) { 
     user.token(
       client_id: consumer.uuid,
@@ -31,6 +39,8 @@ describe DukeAuth::V1::UserAPI do
       expect(response_json['uid']).to eq(user.uid)
       expect(response_json).to have_key('scope')
       expect(response_json['scope']).to eq(scope)
+      expect(response_json).to have_key('signed_info')
+      expect(response_json['signed_info']).to eq(signed_info)
       expect(response_json).to have_key('expires_in')
       expected_ttl = $redis.ttl(token)
       expect(expected_ttl).not_to eq(-1)
