@@ -5,7 +5,7 @@ Rails.application.config.middleware.use OmniAuth::Builder do
     :info_fields => {
       :mail    => "mail"
     },
-    :debug => true,
+#    :debug => true,
     :request_type => :header
   }
 end
