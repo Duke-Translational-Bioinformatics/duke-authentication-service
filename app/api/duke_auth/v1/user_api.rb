@@ -13,10 +13,18 @@ module DukeAuth
         token_info_params = declared(params, include_missing: false)
         if credentials = User.credentials(token_info_params[:access_token])
           info = JSON.parse(credentials[:info])
+          audience = Consumer.where(uuid: info['client_id']).first
+          signed_info = audience.signed_token({
+            uid: info['uid'],
+            display_name: info['display_name'],
+            email: info['email'],
+            service_id: Rails.application.secrets.service_id
+          })
           {
-            audience: info['client_id'],
+            audience: audience.uuid,
             uid: info['uid'],
             scope: info['scope'],
+            signed_info: signed_info,
             expires_in: credentials[:expires_in]
           }
         else
