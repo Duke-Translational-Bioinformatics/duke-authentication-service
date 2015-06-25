@@ -6,6 +6,7 @@ gem 'rails', '4.2.1'
 gem 'sqlite3'
 # Use puma as the webserver in development
 gem 'puma'
+gem 'rack-cors'
 
 gem 'jwt'
 gem 'grape'
