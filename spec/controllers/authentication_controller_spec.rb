@@ -5,6 +5,8 @@ RSpec.describe AuthenticationController, type: :controller do
   let(:user) { FactoryGirl.create(:user) }
   let(:first_time_user) { FactoryGirl.build(:user) }
   let(:consumer) { FactoryGirl.create(:consumer) }
+  let(:last_name) { Faker::Name.last_name }
+  let(:first_name) { Faker::Name.first_name }
   let(:display_name) { Faker::Name.name }
   let(:email) { Faker::Internet.email }
   let(:response_type) { 'token' }
@@ -17,6 +19,8 @@ RSpec.describe AuthenticationController, type: :controller do
 
   def handle_shibboleth_expectation(expected_user)
     expect(session[:uid]).to eq(expected_user.uid)
+    expect(session[:first_name]).to eq(first_name)
+    expect(session[:last_name]).to eq(last_name)
     expect(session[:display_name]).to eq(display_name)
     expect(session[:email]).to eq(email)
   end
@@ -25,6 +29,8 @@ RSpec.describe AuthenticationController, type: :controller do
     @request.env['omniauth.auth'] = {
       uid: user.uid,
       info: {
+        givenname: first_name,
+        sn: last_name,
         name: display_name,
         mail: email
       }
@@ -33,6 +39,8 @@ RSpec.describe AuthenticationController, type: :controller do
 
   def generate_shib_session(user)
     session[:uid] = user.uid
+    session[:first_name] = first_name
+    session[:last_name] = last_name
     session[:display_name] = display_name
     session[:email] = email
   end
