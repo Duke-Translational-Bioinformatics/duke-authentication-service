@@ -3,6 +3,8 @@ require 'shoulda-matchers'
 
 RSpec.describe User, type: :model do
   subject { FactoryGirl.create(:user) }
+  let(:first_name) { Faker::Name.first_name }
+  let(:last_name) { Faker::Name.last_name}
   let(:display_name) { Faker::Name.name }
   let(:email) { Faker::Internet.email }
   let(:scope) { Rails.application.config.default_scope }
@@ -13,6 +15,8 @@ RSpec.describe User, type: :model do
       uid: subject.uid,
       client_id: consumer.uuid,
       email: email,
+      first_name: first_name,
+      last_name: last_name,
       display_name: display_name,
       scope: scope
     }
@@ -40,11 +44,26 @@ RSpec.describe User, type: :model do
       expect{
         subject.token(client_id: consumer.uuid,
                       email: email,
+                      first_name: first_name)
+      }.to raise_error(ArgumentError)
+      expect{
+        subject.token(client_id: consumer.uuid,
+                      email: email,
+                      first_name: first_name,
+                      last_name: last_name)
+      }.to raise_error(ArgumentError)
+      expect{
+        subject.token(client_id: consumer.uuid,
+                      email: email,
+                      first_name: first_name,
+                      last_name: last_name,
                       display_name: display_name)
       }.to raise_error(ArgumentError)
       expect{
         subject.token(client_id: consumer.uuid,
                       email: email,
+                      first_name: first_name,
+                      last_name: last_name,
                       display_name: display_name,
                       scope: scope)
       }.not_to raise_error
@@ -54,6 +73,8 @@ RSpec.describe User, type: :model do
       token = subject.token(
             client_id: consumer.uuid,
             email: email,
+            first_name: first_name,
+            last_name: last_name,
             display_name: display_name,
             scope: scope)
       expect(token).to be
@@ -73,6 +94,8 @@ RSpec.describe User, type: :model do
       subject.token(
         client_id: consumer.uuid,
         email: email,
+        first_name: first_name,
+        last_name: last_name,
         display_name: display_name,
         scope: scope
       )
