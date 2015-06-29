@@ -5,24 +5,30 @@ describe DukeAuth::V1::UserAPI do
   let(:json_headers) { { 'Accept' => 'application/json', 'Content-Type' => 'application/json'} }
   let(:consumer) {FactoryGirl.create(:consumer)}
   let (:user) { FactoryGirl.create(:user) }
+  let (:first_name) { Faker::Name.first_name }
+  let (:last_name) { Faker::Name.last_name }
   let(:display_name) { Faker::Name.name }
   let(:email) { Faker::Internet.email }
-  let(:scope) { 'display_name email uid' }
-  let(:signed_info) { 
+  let(:scope) { 'display_name first_name last_name email uid' }
+  let(:signed_info) {
     consumer.signed_token({
       uid: user.uid,
+      first_name: first_name,
+      last_name: last_name,
       display_name: display_name,
       email: email,
       service_id: Rails.application.secrets.service_id
     })
   }
-  let (:token) { 
+  let (:token) {
     user.token(
       client_id: consumer.uuid,
-      display_name: display_name, 
-      email: email, 
+      first_name: first_name,
+      last_name: last_name,
+      display_name: display_name,
+      email: email,
       scope: scope
-    ) 
+    )
   }
 
   describe 'get token_info' do

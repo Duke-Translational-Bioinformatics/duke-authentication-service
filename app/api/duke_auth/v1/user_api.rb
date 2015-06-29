@@ -16,6 +16,8 @@ module DukeAuth
           audience = Consumer.where(uuid: info['client_id']).first
           signed_info = audience.signed_token({
             uid: info['uid'],
+            first_name: info['first_name'],
+            last_name: info['last_name'],
             display_name: info['display_name'],
             email: info['email'],
             service_id: Rails.application.secrets.service_id
