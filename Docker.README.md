@@ -377,9 +377,7 @@ Data Service.
 Both this repo and the Duke Authentication Service repo come with rake tasks
 to create these objects once their respective db services have been started.
 
-Assuming you are starting from scratch (e.g. you do not have any db containers
-running or stopped for this or the Authentication Service), you can get both
-up and running and wired together with the following set of commands:
+You can get both up and running and wired together with the following set of commands:
 
 ```
 cd PATHTO/duke-authentication-service
@@ -392,6 +390,16 @@ docker-compose rake db:migrate
 docker-compose run authservice
 ```
 
+the above commands have been collected into shell scripts in the root of both.
+You can accomplish the same as above (regardless of whether your COMPOSE_FILE
+environment variable has been set) using:
+```
+cd PATHTO/duke-authentication-service
+./launch_application.sh
+cd PATHTO/duke-data-service
+./launch_application.sh
+```
+ 
 Deploying with Docker and capistrano
 ------------------------------------
 You could use the example dc-dev.utils.yml to use docker-compose to deploy to the
