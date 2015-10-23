@@ -6,6 +6,7 @@ GRANT create any trigger TO &1;
 GRANT create any procedure TO &1;
 GRANT create sequence TO &1;
 GRANT create synonym TO &1;
+alter user &1 quota unlimited on system;
 CREATE USER &3 IDENTIFIED BY &4;
 GRANT create session TO &3;
 GRANT create table TO &3;
@@ -14,5 +15,6 @@ GRANT create any trigger TO &3;
 GRANT create any procedure TO &3;
 GRANT create sequence TO &3;
 GRANT create synonym TO &3;
+alter user &3 quota unlimited on system;
 quit;
 /
