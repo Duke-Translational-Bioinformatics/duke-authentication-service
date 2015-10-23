@@ -1,3 +1,4 @@
+/instantclient
 *.rbc
 capybara-*.html
 .rspec
