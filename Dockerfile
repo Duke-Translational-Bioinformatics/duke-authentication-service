@@ -29,6 +29,14 @@ RUN ["/usr/sbin/useradd", "-N", "-u", "1000", "-g", "50", "deployer"]
 #sqlite client
 RUN ["/usr/bin/yum", "install", "-y", "--nogpgcheck", "sqlite", "sqlite-devel"]
 
+# oracle
+RUN ["/usr/bin/yum", "install", "-y", "--nogpgcheck", "libaio"]
+ADD docker/includes/instantclient /usr/local/lib/instantclient
+ADD docker/includes/oracle.sh /etc/profile.d/oracle.sh
+ADD docker/includes/oracle.conf /etc/ld.so.conf.d/oracle.conf
+RUN ["ldconfig"]
+ENV ORACLE_HOME="/usr/local/lib/instantclient" TNS_ADMIN="/usr/local/lib/instantclient" LD_LIBRARY_PATH="/usr/local/lib/instantclient/" PATH="${PATH}:/usr/local/lib/instantclient"
+
 #miscellaneous
 RUN ["/usr/bin/yum", "install", "-y", "--nogpgcheck", "epel-release"]
 RUN ["/usr/bin/yum", "install", "-y", "--nogpgcheck", "nodejs", "libxml2", "libxml2-devel", "libxslt", "libxslt-devel"]

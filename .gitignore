@@ -1,4 +1,4 @@
-/instantclient
+docker/includes/instantclient
 *.rbc
 capybara-*.html
 .rspec
