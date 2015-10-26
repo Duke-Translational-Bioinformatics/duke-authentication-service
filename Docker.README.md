@@ -234,15 +234,15 @@ docker-compose up -d
 ```
 
 This example mounts the Application Root as /var/www/app in the server docker
-container.  The Dockerfile would specifies /var/www/app as its default
+container.  The Dockerfile specifies /var/www/app as its default
 WORKDIR. It hosts the application at port 3000, but this is not made visible
 to the host. Instead, the server container is linked with the rproxy container
 which reverse proxies calls to it to the server at port 3000.  The reverse
 proxy Dockerfile exposes itself on port 443 inside the container, which
 is attached to port 3000 on the docker-machine VM host (this will fail if you
-have another service of any kind attached to port 3000). To connect to this
-host, you should use the following docker-machine command to find the ip of the
-docker-machine:
+have another service of any kind attached to port 3000). It also launches
+an oracle 11 db container. To connect to this host, you should use the following
+docker-machine command to find the ip of the docker-machine:
 ```
 docker-machine ip dev
 ```
@@ -325,8 +325,13 @@ docker-compose up -d rproxy
 Docker-compose is smart enough to realize all of the linked services required,
 and spin them up in order.
 
-Run the rspec (as RAILS_ENV=test)
+Run the rspec (as RAILS_ENV=test). Note, because the oracle container takes some time
+to start, you need to bring up the db 1-2 seconds before you run rspec, or run rspec
+until it works:
+
 ```
+docker-compose up -d db
+sleep 1
 docker-compose run rspec
 docker-compose run rspec spec/requests
 docker-compose run rspec spec/models/survey_spec.rb
@@ -336,11 +341,13 @@ Run bundle install (you will need to do this even if you
 have built the application, or the Gemfile.lock file will
 not get updated to reflect the newly installed gems.):
 ```
-docker-compose run server bundle install
+docker-compose run bundle
 ```
 
 Run rake commands (default RAILS_ENV=development):
 ```
+docker-compose up -d db
+sleep 1
 docker-compose run rake db:migrate
 docker-compose run rake db:seed
 docker-compose run rake db:migrate RAILS_ENV=test
@@ -348,6 +355,8 @@ docker-compose run rake db:migrate RAILS_ENV=test
 
 Run rails commands (default RAILS_ENV=development):
 ```
+docker-compose up -d db
+sleep 1
 docker-compose run rails c
 docker-compose run rails c RAILS_ENV=test
 ```
@@ -355,6 +364,8 @@ docker-compose run rails c RAILS_ENV=test
 Create the default Consumer object that links to the [DukeDataService](https://github.com/Duke-Translational-Bioinformatics/duke-data-service) container that is run from its Application Root using docker-compose
 (see below):
 ```
+docker-compose up -d db
+sleep 1
 docker-compose run consumer
 ```
 
@@ -362,6 +373,26 @@ Remove the authservice
 ```
 docker-compose run consumer consumer:destroy
 ```
+
+Oracle Database Image
+---------------------
+The docker-compose yaml files specify an oracle 11 database image, which
+is built from docker/builds/db. This starts from a basic oracle 11g Express
+docker image, and configures it to provision the DEV and TEST schemas specified
+in the docker environment file db.local.env.
+
+```
+ In order to build the server, you must have an instantclient (version 11+)
+ directory in docker/includes. This must have the basic, sdk, and sqlite tar
+ files untarred into it, and the versioned .so files symlinked to their
+ unversioned file (e.g. ln -s libocci.so.11.1 libocci.so). Duke ORI developers
+ can ask for access to the Duke Box DDS shared folder, where this directory is
+ contained in a single gzipped tar file.
+```
+
+Oracle is slow to startup. This causes some pain in using it in a dockerized
+environment.  You need to launch the db image a second or so before running
+any processes which use the db, such as rake db:migrate, etc.
 
 Connecting to a DukeDataService microservice
 --------------------------------------------------
@@ -399,7 +430,7 @@ cd PATHTO/duke-authentication-service
 cd PATHTO/duke-data-service
 ./launch_application.sh
 ```
- 
+
 Deploying with Docker and capistrano
 ------------------------------------
 You could use the example dc-dev.utils.yml to use docker-compose to deploy to the

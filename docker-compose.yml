@@ -1,13 +1,21 @@
 server:
   build: .
-  environment:
-    - RAILS_ENV=development
-    - REDIS_HOST=redis.local
-    - REDIS_PORT=6379
+  env_file:
+    - webapp.env
+    - db.env
   volumes:
     - .:/var/www/app
   links:
+    - 'db:db.local'
     - 'redis:redis.local'
+db:
+  build: ./docker/builds/db
+  env_file:
+    - db.env
+  ports:
+    - "2222:22"
+redis:
+  image: redis
 shibconfig:
   image: shibconfig
 rproxy:
@@ -18,5 +26,3 @@ rproxy:
     - "server:protected.app"
   volumes_from:
     - shibconfig
-redis:
-  image: redis

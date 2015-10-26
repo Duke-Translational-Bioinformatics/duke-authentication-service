@@ -4,6 +4,9 @@ source 'https://rubygems.org'
 gem 'rails', '4.2.1'
 # Use sqlite as the database for Active Record
 gem 'sqlite3'
+gem 'ruby-oci8'
+gem 'activerecord-oracle_enhanced-adapter'
+
 # Use puma as the webserver in development
 gem 'puma'
 gem 'rack-cors'
