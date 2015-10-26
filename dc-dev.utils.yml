@@ -56,10 +56,10 @@ rake:
 consumer:
   image: dukeauthenticationservice_server
   env_file:
-    - consumer.env
   volumes_from:
     - server
   env_file:
+    - consumer.env
     - webapp.env
     - db.env
   links:
