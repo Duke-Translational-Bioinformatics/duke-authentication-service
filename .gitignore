@@ -32,3 +32,4 @@ bower.json
 
 # Ignore all logfiles and tempfiles.
 /log/*
+secrets.*.env
