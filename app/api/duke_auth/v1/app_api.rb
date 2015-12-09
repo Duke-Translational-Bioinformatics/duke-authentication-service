@@ -7,7 +7,7 @@ module DukeAuth
       end
       get '/app/status', root: false do
         begin
-          {status: 'ok'}
+          {status: 'ok', environment: "#{Rails.env}"}
         rescue
           error!('problem encountered',503)
         end
