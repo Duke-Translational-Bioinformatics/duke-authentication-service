@@ -13,6 +13,8 @@ describe DukeAuth::V1::AppAPI do
       expect(returned_configs).to be_a Hash
       expect(returned_configs).to have_key('status')
       expect(returned_configs['status']).to eq('ok')
+      expect(returned_configs).to have_key('environment')
+      expect(returned_configs['environment']).to eq(Rails.env)
     end
   end
 end
