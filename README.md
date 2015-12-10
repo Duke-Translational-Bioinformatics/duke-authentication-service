@@ -130,19 +130,26 @@ display_name first_name last_name mail uid
 Future changes to the system may be made to support new scopes to request different user credential attributes.
 
 ### contributing
-The master branch of the project is considered the stable, production branch.
-All commits should propogate from 'develop' to 'uatest', and then to master
-only after UA Testing has approved changes to the code.
-Here are steps for new developers to follow:
+Developers should fork this repository, and submit pull requests to the develop branch.
+Pull requests may be submitted to your forks by other developers to signal that changes
+in the develop branch should be merged into your fork.
 
-1. Git clone the project
-1. git fetch origin develop
-1. git checkout --track origin/develop
-1. develop on develop.  As a precaution, you should always create
-branches off of develop explicitly, e.g.:
-  ```
-  $ git branch -b try_foo develop
-  ```
-You should then merge branches back into devlop. You might consider
-deleting the master branch from your local repository.
-1. git push/pull (this will push to and pull from develop)
+These pull requests can either be managed in the github UI, or ignored and managed
+at the commandline. Here is how you can set up a clone of your fork to fetch
+from the 'official' repo, but not allow pushes to this repo (which will also be prevented
+by the official github repo):
+```
+git clone git@github.com:$USER/duke-authentication-service.git
+cd duke-authentication-service
+git remote add official git@github.com:Duke-Translational-Bioinformatics/duke-authentication-service.git
+git remote add official git@github.com:Duke-Translational-Bioinformatics/duke-authentication-service.git
+git remote set-url --push official donotpush
+```
+
+Then, you can do the following (assuming you are in your develop branch, or another
+branch off develop that you intend to merge into develop):
+```
+git fetch official develop
+git merge official/develop
+git push
+```
