@@ -11,158 +11,126 @@ RSpec.describe AuthenticationController, type: :controller do
   let(:email) { Faker::Internet.email }
   let(:response_type) { 'token' }
   let(:state) { Faker::Lorem.characters(20) }
+  let(:non_existent_client_id) { SecureRandom.uuid }
 
-  def generate_authenticate_session
-    session[:client_id] = consumer.uuid
-    session[:state] = state
-  end
+  describe '#authenticate' do
+    subject { get :authenticate, request_params }
+    let(:request_params) { {
+        client_id: consumer.uuid,
+        response_type: response_type,
+        scope: Rails.application.config.default_scope,
+        state: state
+    } }
 
-  def handle_shibboleth_expectation(expected_user)
-    expect(session[:uid]).to eq(expected_user.uid)
-    expect(session[:first_name]).to eq(first_name)
-    expect(session[:last_name]).to eq(last_name)
-    expect(session[:display_name]).to eq(display_name)
-    expect(session[:email]).to eq(email)
-  end
-
-  def login_shib_user(user, display_name, email)
-    @request.env['omniauth.auth'] = {
-      uid: user.uid,
-      info: {
-        givenname: first_name,
-        sn: last_name,
-        name: display_name,
-        mail: email
-      }
-    }
-  end
-
-  def generate_shib_session(user)
-    session[:uid] = user.uid
-    session[:first_name] = first_name
-    session[:last_name] = last_name
-    session[:display_name] = display_name
-    session[:email] = email
-  end
-
-  def authorized_consumer_expectation
-    expect(assigns(:token)).to be
-    token = assigns(:token)
-    token_ttl = $redis.ttl(token)
-    params = {
-      access_token: token,
-      token_type: 'Bearer',
-      state: session[:state],
-      expires_in: token_ttl,
-      scope: Rails.application.config.default_scope
-    }
-    expect(response).to redirect_to(consumer.redirect_uri+'#'+params.to_query)
-  end
-
-  def unexpected_request_response
-    expect(response.status).to eq(401)
-    expect(response.body).to eq('invalid_request')
-  end
-
-  describe 'authenticate' do
-    it 'should respond with 401 and invalid_request if no url parameters are present' do
-      get :authenticate
-      unexpected_request_response
+    it_behaves_like 'a successful redirect' do
+      let(:expected_redirect_url) { shibboleth_login_url(:protocol => 'https://') }
+      it { expect(session[:client_id]).to eq(consumer.uuid) }
+      it { expect(session[:state]).to eq(state) }
     end
 
-    it 'should respond with 401 and invalid_request if consumer does not exist for the client_id specified' do
-      non_existent_client_id = SecureRandom.uuid
-      expect(non_existent_client_id).not_to eq(consumer.uuid)
-      expect(Consumer.where(uuid: non_existent_client_id)).not_to exist
-      get :authenticate,
+    context 'without parameters' do
+      let(:request_params) { {} }
+      it_behaves_like 'an unexpected request'
+    end
+
+    context 'with non-existent consumer' do
+      let(:request_params) { {
         client_id: non_existent_client_id,
         response_type: response_type,
         scope: Rails.application.config.default_scope,
         state: state
-      unexpected_request_response
+      } }
+      it { expect(non_existent_client_id).not_to eq(consumer.uuid) }
+      it { expect(Consumer.where(uuid: non_existent_client_id)).not_to exist }
+      it_behaves_like 'an unexpected request'
     end
 
-    it 'should respond with 401 and invalid_request if state is not present' do
-      get :authenticate,
+    context 'without state parameter' do
+      let(:request_params) { {
         client_id: consumer.uuid,
         response_type: response_type,
         scope: Rails.application.config.default_scope
-      unexpected_request_response
-    end
-
-    it 'should create session and redirect_to shibboleth_login_url if consumer exists and required parameters are present' do
-      get :authenticate,
-        client_id: consumer.uuid,
-        response_type: response_type,
-        scope: Rails.application.config.default_scope,
-        state: state
-      expect(session[:client_id]).to eq(consumer.uuid)
-      expect(session[:state]).to eq(state)
-      # scope and response_type are there, but currently unused
-      expect(response).to redirect_to(shibboleth_login_url(:protocol => 'https://'))
+      } }
+      it_behaves_like 'an unexpected request'
     end
   end
 
-  describe 'handle_shibboleth' do
-   describe 'when user has not already authorized the consumer' do
-     it 'should set user session and redirect_to authorize' do
-       generate_authenticate_session
-       login_shib_user(first_time_user, display_name, email)
-       get :handle_shibboleth
-       handle_shibboleth_expectation(first_time_user)
-       expect(response).to redirect_to(authorize_url(:protocol => 'https://'))
-     end
-   end
+  describe '#handle_shibboleth' do
+    subject { get :handle_shibboleth }
+    include_context 'with authenticated session'
+    include_context 'with shibboleth env'
 
-   describe 'when user has already authorized the consumer' do
-     it 'should create access_token and redirect_to consumer.redirect_uri with expected fragment url parameters' do
-       generate_authenticate_session
-       login_shib_user(user, display_name, email)
-       get :handle_shibboleth
-       handle_shibboleth_expectation(user)
-       authorized_consumer_expectation
-     end
-   end
-  end
+    context 'with existing user' do
+      let(:user) { FactoryGirl.create(:user) }
 
-  describe 'authorize' do
-    it 'should present the user with a form to allow the consumer access to their profile' do
-      generate_authenticate_session
-      generate_shib_session(first_time_user)
-      get :authorize
-      expect(assigns(:user)).to be
-      expect(assigns(:user).uid).to eq(first_time_user.uid)
-      expect(assigns(:user)).not_to be_persisted
+      it_behaves_like 'a successful redirect' do
+        include_context 'with consumer redirect url'
+        it_behaves_like 'a shibboleth handler'
+      end
+    end
+
+    context 'with first time user' do
+      let(:user) { first_time_user }
+ 
+      it_behaves_like 'a successful redirect' do
+        let(:expected_redirect_url) { authorize_url(:protocol => 'https://') }
+        it_behaves_like 'a shibboleth handler'
+      end
     end
   end
 
-  describe 'process_authorization' do
-   describe 'when user declines to authorize the consumer to access their profile' do
-     it 'should not create the new user, and redirect_to consumer.uri with expected fragment url parameters' do
-       generate_authenticate_session
-       generate_shib_session(first_time_user)
-       expect {
-         post :process_authorization, commit: 'deny'
-       }.to_not change{User.count}
-       expect(User.where(uid: first_time_user.uid)).not_to exist
-       params = {
-         error: 'access_denied',
-         state: session[:state]
-       }
-       expect(response).to redirect_to(consumer.redirect_uri+'#'+params.to_query)
-     end
-   end
+  describe '#authorize' do
+    subject { get :authorize }
+    include_context 'with authenticated session'
+    include_context 'with shibboleth session'
 
-   describe 'when user authorizes the consumer to access their profile' do
-     it 'should create new user and access_token and redirect_to consumer.redirect_uri with expected fragment url parameters' do
-       generate_authenticate_session
-       generate_shib_session(first_time_user)
-       expect {
-         post :process_authorization, commit: 'allow'
-       }.to change{User.count}.by(1)
-       expect(User.where(uid: first_time_user.uid)).to exist
-       authorized_consumer_expectation
-     end
-   end
+    it_behaves_like 'a successful request' do
+      it 'populates the user instance variable' do
+        expect(assigns(:user)).to be
+        expect(assigns(:user).uid).to eq(user.uid)
+        expect(assigns(:user)).not_to be_persisted
+      end
+    end
+  end
+
+  describe '#process_authorization' do
+    subject { post :process_authorization, request_params }
+    let(:request_params) { {commit: 'allow'} }
+    let(:user) { first_time_user }
+    include_context 'with authenticated session'
+    include_context 'with shibboleth session'
+
+    it 'persists changes' do
+      expect { subject }.to change{User.count}.by(1)
+      expect(User.where(uid: user.uid)).to exist
+    end
+
+    it_behaves_like 'a successful redirect' do
+      include_context 'with consumer redirect url'
+      let(:token_params) { {
+        access_token: token,
+        token_type: 'Bearer',
+        state: session[:state],
+        expires_in: token_ttl,
+        scope: Rails.application.config.default_scope
+      } }
+    end
+
+    context 'when user declines' do
+      let(:request_params) { {commit: 'deny'} }
+
+      it 'should not persist changes' do
+        expect { subject }.to_not change{User.count}
+        expect(User.where(uid: user.uid)).not_to exist
+      end
+
+      it_behaves_like 'a successful redirect' do
+        include_context 'with consumer redirect url'
+        let(:token_params) { {
+          error: 'access_denied',
+          state: session[:state]
+        } }
+      end
+    end
   end
 end
