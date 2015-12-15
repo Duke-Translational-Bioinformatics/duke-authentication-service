@@ -1,5 +1,4 @@
 require 'rails_helper'
-require 'shoulda/matchers'
 
 describe Consumer, type: :model do
   subject() { FactoryGirl.create(:consumer) }
