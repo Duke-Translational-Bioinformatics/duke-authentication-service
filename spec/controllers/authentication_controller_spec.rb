@@ -1,5 +1,4 @@
 require 'rails_helper'
-require 'securerandom'
 
 RSpec.describe AuthenticationController, type: :controller do
   let(:user) { FactoryGirl.create(:user) }
