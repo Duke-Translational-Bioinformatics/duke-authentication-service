@@ -1,5 +1,4 @@
 require 'rails_helper'
-require 'jwt'
 
 describe DukeAuth::V1::UserAPI do
   let(:json_headers) { { 'Accept' => 'application/json', 'Content-Type' => 'application/json'} }
