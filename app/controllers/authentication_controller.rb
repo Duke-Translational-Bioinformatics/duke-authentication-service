@@ -73,6 +73,7 @@ class AuthenticationController < ApplicationController
         state: session[:state]
       }
     end
+    reset_session
     redirect_to(consumer.redirect_uri+'#'+params.to_query)
   end
 end
