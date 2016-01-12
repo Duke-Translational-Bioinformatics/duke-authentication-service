@@ -64,7 +64,6 @@ RSpec.describe AuthenticationController, type: :controller do
 
       it_behaves_like 'a successful redirect' do
         include_context 'with consumer redirect url'
-        it_behaves_like 'a shibboleth handler'
       end
     end
 
@@ -109,7 +108,7 @@ RSpec.describe AuthenticationController, type: :controller do
       let(:token_params) { {
         access_token: token,
         token_type: 'Bearer',
-        state: session[:state],
+        state: state,
         expires_in: token_ttl,
         scope: Rails.application.config.default_scope
       } }
@@ -127,7 +126,7 @@ RSpec.describe AuthenticationController, type: :controller do
         include_context 'with consumer redirect url'
         let(:token_params) { {
           error: 'access_denied',
-          state: session[:state]
+          state: state
         } }
       end
     end

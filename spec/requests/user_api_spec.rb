@@ -63,4 +63,38 @@ describe DukeAuth::V1::UserAPI do
       expect(response.body).to eq('{"error":"invalid_token"}')
     end
   end #get token_info
+
+  describe 'POST /revoke' do
+    subject { post url, payload.to_json, json_headers }
+    let(:url) { "/api/v1/revoke/" }
+    let(:payload) { {token: token} }
+
+    context 'with existing token in payload' do
+      before { is_expected.to eq 200 }
+
+      it { expect(response.body).to eq '200' }
+      it { expect($redis.exists(token)).not_to be }
+    end
+
+    context 'with non-existent token in payload' do
+      before { is_expected.to eq 200 }
+      let(:token) { 'doesnotexist' }
+
+      it { expect(response.body).to eq '200' }
+      it { expect($redis.exists(token)).not_to be }
+    end
+
+    context 'without a token parameter' do
+      before { is_expected.to eq 400 }
+      let(:payload) { {} }
+      let(:expected_error) {
+        {
+          error: 'invalid_request',
+          error_description: 'token is missing'
+        }
+      }
+
+      it { expect(response.body).to eq expected_error.to_json}
+    end
+  end
 end

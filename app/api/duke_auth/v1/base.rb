@@ -15,6 +15,14 @@ module DukeAuth
         end
       end
 
+      rescue_from Grape::Exceptions::ValidationErrors do |e|
+          error_payload = { 
+            error: 'invalid_request',
+            error_description: e.message 
+          }
+          error!(error_payload, 400)
+      end
+
       mount DukeAuth::V1::UserAPI
       mount DukeAuth::V1::AppAPI
     end
