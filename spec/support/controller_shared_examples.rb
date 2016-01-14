@@ -70,7 +70,7 @@ shared_context 'with consumer redirect url' do
   let(:token_params) { {
     access_token: token,
     token_type: 'Bearer',
-    state: session[:state],
+    state: state,
     expires_in: token_ttl,
     scope: Rails.application.config.default_scope
   } }

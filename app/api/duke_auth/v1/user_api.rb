@@ -33,6 +33,19 @@ module DukeAuth
           error!({error: 'invalid_token'},400)
         end
       end
+
+      desc 'revoke' do
+        detail 'This allows a consumer to revoke a token'
+        named 'revoke'
+        failure [400]
+      end
+      params do
+        requires :token, type: String
+      end
+      post '/revoke', root: false do
+        $redis.del(params[:token])
+        status 200
+      end
     end
   end
 end
